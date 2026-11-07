@@ -71,7 +71,7 @@ public class FourMotorTest extends LinearOpMode {
         telemetry.addLine("3. Face robot front away.");
         telemetry.addLine("4. Press PLAY to begin.");
         telemetry.addLine();
-        telemetry.addData("Test Power", "25%%");
+        telemetry.addData("Test Power", "25%");
         telemetry.addData("Motor Duration", "5 seconds");
         telemetry.update();
 
