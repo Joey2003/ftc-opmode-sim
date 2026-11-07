@@ -1,8 +1,9 @@
 /*
 Instructions:
 
-1. Create a new linear op mode named FourMotorTest.java
-2. Copy paste the code below.
+1. Edit this OpMode, then press Build Everything.
+2. On the Driver Station, press INIT, then PLAY.
+3. On a real robot: create a new linear op mode named FourMotorTest.java and copy paste this code.
 
 */
 

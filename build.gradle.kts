@@ -20,13 +20,25 @@ val libraryProperties = Properties().apply {
 
 val libName = "ftc-opmode-sim"
 // Processing library folder names must be ASCII letters/digits only (no hyphens).
-// Installed folder and jar use this name. Change when the library name is decided.
+// Installed folder and jar use this name.
 val installName = "ftcopmodesim"
 group = "org.nycfirst"
 version = libraryProperties.getProperty("prettyVersion")
 
 // Processing core from the installed app (provided by Processing at runtime).
-val processingCore = "/Applications/Processing.app/Contents/app/resources/core/library/core-4.5.7.jar"
+// Auto-detects core-*.jar inside /Applications/Processing.app (any version).
+// Override with -PprocessingCore=/path/to/core.jar
+val processingCore: String = (findProperty("processingCore") as String?)?.also {
+    if (!File(it).isFile) throw GradleException("processingCore not found: $it")
+} ?: run {
+    val app = File("/Applications/Processing.app")
+    app.walkTopDown().maxDepth(7).onEnter { it.name != "jdk" }
+        .filter { it.isFile && it.name.matches(Regex("core-.*\\.jar")) && it.parentFile.name == "library" }
+        .maxByOrNull { it.name }?.absolutePath
+        ?: throw GradleException(
+            "Processing core jar not found in /Applications/Processing.app.\n" +
+            "Install Processing 4 there, or pass the path: ./gradlew build -PprocessingCore=/path/to/core.jar")
+}
 
 // Sketchbook location (same logic as the template). Override with -PsketchbookLocation=...
 val userHome = System.getProperty("user.home")
