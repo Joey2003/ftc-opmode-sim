@@ -50,16 +50,21 @@ public class OpModeSim {
 
   /** Compiles OpMode source. fileName must match the public class (e.g. "FourMotorTest.java"). */
   public boolean compile(String fileName, String source) {
+    return build(fileName, source).ok;
+  }
+
+  /** Compiles, and on success makes the OpMode the one the Driver Station runs. Thread-safe. */
+  public OpModeCompiler.Result build(String fileName, String source) {
     OpModeCompiler.Result r = OpModeCompiler.compile(fileName, source);
     for (String e : r.errors) out.println(e);
     if (!r.ok) {
       out.println("Build FAILED.");
-      return false;
+      return r;
     }
     runner.setOpMode(r.opModeClass, r.opModeName);
     out.println("Build succeeded!");
     out.println("OpMode \"" + r.opModeName + "\" is now available on the Driver Station.");
-    return true;
+    return r;
   }
 
   public void init() { runner.init(); }

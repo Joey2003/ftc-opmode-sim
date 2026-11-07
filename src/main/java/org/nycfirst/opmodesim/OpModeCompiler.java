@@ -17,15 +17,30 @@ public final class OpModeCompiler {
 
   private OpModeCompiler() {}
 
+  /** One compile problem. line/column are 1-based, or -1 when not tied to a line. */
+  public static final class Problem {
+    public final long line;
+    public final long column;
+    public final String message;
+
+    Problem(long line, long column, String message) {
+      this.line = line;
+      this.column = column;
+      this.message = message;
+    }
+  }
+
   public static final class Result {
     public final boolean ok;
     public final List<String> errors;
+    public final List<Problem> problems;
     public final Class<? extends LinearOpMode> opModeClass;
     public final String opModeName;
 
-    Result(List<String> errors, Class<? extends LinearOpMode> cls, String name) {
+    Result(List<String> errors, List<Problem> problems, Class<? extends LinearOpMode> cls, String name) {
       this.ok = cls != null;
       this.errors = Collections.unmodifiableList(errors);
+      this.problems = Collections.unmodifiableList(problems);
       this.opModeClass = cls;
       this.opModeName = name;
     }
@@ -33,10 +48,13 @@ public final class OpModeCompiler {
 
   public static Result compile(String fileName, String source) {
     List<String> errors = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
-      errors.add("No Java compiler available (running on a JRE?). java.home=" + System.getProperty("java.home"));
-      return new Result(errors, null, null);
+      String m = "No Java compiler available (running on a JRE?). java.home=" + System.getProperty("java.home");
+      errors.add(m);
+      problems.add(new Problem(-1, -1, m));
+      return new Result(errors, problems, null, null);
     }
 
     Map<String, ByteArrayOutputStream> out = new LinkedHashMap<>();
@@ -65,9 +83,10 @@ public final class OpModeCompiler {
     for (Diagnostic<? extends JavaFileObject> d : diags.getDiagnostics()) {
       if (d.getKind() == Diagnostic.Kind.ERROR) {
         errors.add(fileName + ":" + d.getLineNumber() + ": error: " + d.getMessage(Locale.US));
+        problems.add(new Problem(d.getLineNumber(), d.getColumnNumber(), d.getMessage(Locale.US)));
       }
     }
-    if (!ok) return new Result(errors, null, null);
+    if (!ok) return new Result(errors, problems, null, null);
 
     Map<String, byte[]> bytes = new HashMap<>();
     out.forEach((k, v) -> bytes.put(k, v.toByteArray()));
@@ -85,13 +104,16 @@ public final class OpModeCompiler {
         else if (a != null) name = a.name();
         else continue;
         if (name.isEmpty()) name = c.getSimpleName();
-        return new Result(errors, c.asSubclass(LinearOpMode.class), name);
+        return new Result(errors, problems, c.asSubclass(LinearOpMode.class), name);
       } catch (Throwable e) {
         errors.add("Could not load " + className + ": " + e);
+        problems.add(new Problem(-1, -1, "Could not load " + className + ": " + e));
       }
     }
-    errors.add("No OpMode found. Add @TeleOp or @Autonomous to a class that extends LinearOpMode.");
-    return new Result(errors, null, null);
+    String none = "No OpMode found. Add @TeleOp or @Autonomous to a class that extends LinearOpMode.";
+    errors.add(none);
+    problems.add(new Problem(-1, -1, none));
+    return new Result(errors, problems, null, null);
   }
 
   /** Classpath holding the fake SDK: wherever LinearOpMode was loaded from, plus the JVM classpath. */
