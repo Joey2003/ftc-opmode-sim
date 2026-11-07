@@ -1,0 +1,61 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="36" height="76" viewBox="0 0 36 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Rollers" clip-path="url(#clip0_0_8)">
+<g id="Vector">
+<path d="M2 -10L34 -30Z" fill="black"/>
+<path d="M2 -10L34 -30" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_2">
+<path d="M2 0L34 -20Z" fill="black"/>
+<path d="M2 0L34 -20" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_3">
+<path d="M2 10L34 -10Z" fill="black"/>
+<path d="M2 10L34 -10" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_4">
+<path d="M2 20L34 0Z" fill="black"/>
+<path d="M2 20L34 0" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_5">
+<path d="M2 30L34 10Z" fill="black"/>
+<path d="M2 30L34 10" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_6">
+<path d="M2 40L34 20Z" fill="black"/>
+<path d="M2 40L34 20" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_7">
+<path d="M2 50L34 30Z" fill="black"/>
+<path d="M2 50L34 30" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_8">
+<path d="M2 60L34 40Z" fill="black"/>
+<path d="M2 60L34 40" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_9">
+<path d="M2 70L34 50Z" fill="black"/>
+<path d="M2 70L34 50" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_10">
+<path d="M2 80L34 60Z" fill="black"/>
+<path d="M2 80L34 60" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_11">
+<path d="M2 90L34 70Z" fill="black"/>
+<path d="M2 90L34 70" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_12">
+<path d="M2 100L34 80Z" fill="black"/>
+<path d="M2 100L34 80" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+<g id="Vector_13">
+<path d="M2 110L34 90Z" fill="black"/>
+<path d="M2 110L34 90" stroke-width="6" stroke-linecap="round" stroke="#E8B500"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_8">
+<rect width="36" height="76" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -121,6 +121,12 @@ public class OpModeRunner {
 
   public String opModeName() { return opModeName; }
 
+  /** "TeleOp" or "Autonomous", from the OpMode's annotation. Null before a build. */
+  public synchronized String opModeKind() {
+    if (opModeClass == null) return null;
+    return opModeClass.isAnnotationPresent(com.qualcomm.robotcore.eventloop.opmode.Autonomous.class) ? "Autonomous" : "TeleOp";
+  }
+
   /** Last error to show on the Driver Station, or null. */
   public String error() { return error; }
 

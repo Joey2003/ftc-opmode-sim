@@ -55,6 +55,7 @@ public class EditorPanel extends JPanel {
   private final CodePane code = new CodePane();
   private final Gutter gutter = new Gutter();
   private final JTextPane messages = new JTextPane();
+  private final JLabel messageTitle = new JLabel();
   private final BuildButton buildButton = new BuildButton();
   private final UndoManager undo = new UndoManager();
   private final Set<Integer> errorLines = new HashSet<>();
@@ -81,9 +82,9 @@ public class EditorPanel extends JPanel {
 
   private JComponent topBar() {
     JPanel bar = panel(0, 0, WIDTH, 36, RED);
-    bar.add(label("Blocks", Fonts.ui(Font.BOLD, 13), RED_LIGHT_TEXT, 14, 10));
+    bar.add(label("Blocks", Fonts.semibold(13), RED_LIGHT_TEXT, 14, 10));
     JPanel tab = panel(70, 0, 96, 36, RED_DARK);
-    tab.add(label("OnBotJava", Fonts.ui(Font.BOLD, 13), Color.WHITE, 12, 10));
+    tab.add(label("OnBotJava", Fonts.bold(13), Color.WHITE, 12, 10));
     bar.add(tab);
     return bar;
   }
@@ -111,11 +112,12 @@ public class EditorPanel extends JPanel {
       p.add(icon);
     }
     p.add(panel(0, 40, 150, 1, DIVIDER));
-    p.add(label("Project Files", Fonts.ui(Font.BOLD, 12), LABEL_GRAY, 10, 50));
-    p.add(label("▾ org.firstinspires.", Fonts.ui(Font.PLAIN, 11), TEXT, 10, 72));
-    p.add(label("    ftc.teamcode", Fonts.ui(Font.PLAIN, 11), TEXT, 10, 88));
+    p.add(label("Project Files", Fonts.semibold(12), LABEL_GRAY, 10, 50));
+    p.add(label("\u25BE", new Font(Font.SANS_SERIF, Font.PLAIN, 10), TEXT, 10, 73)); // Inter has no ▾ glyph
+    p.add(label("org.firstinspires.", Fonts.regular(11), TEXT, 20, 72));
+    p.add(label("    ftc.teamcode", Fonts.regular(11), TEXT, 10, 88));
     JPanel sel = panel(0, 108, 149, 22, SELECTED);
-    sel.add(label(file.getName(), Fonts.ui(Font.BOLD, 11), TEXT_DARK, 24, 4));
+    sel.add(label(file.getName(), Fonts.semibold(11), TEXT_DARK, 24, 4));
     p.add(sel);
     return p;
   }
@@ -123,7 +125,7 @@ public class EditorPanel extends JPanel {
   private JComponent editorTabs() {
     JPanel tabs = panel(150, 36, 530, 30, TABS_BG);
     JPanel active = panel(0, 0, 150, 30, Color.WHITE);
-    active.add(label(file.getName() + "  ×", Fonts.ui(Font.BOLD, 11), TEXT_DARK, 10, 8));
+    active.add(label(file.getName() + "  ×", Fonts.semibold(11), TEXT_DARK, 10, 8));
     tabs.add(active);
     return tabs;
   }
@@ -135,13 +137,18 @@ public class EditorPanel extends JPanel {
     scroll.setRowHeaderView(gutter);
     scroll.getViewport().setBackground(Color.WHITE);
     scroll.getVerticalScrollBar().setUnitIncrement(CODE_LINE_HEIGHT);
+    scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER); // soft wrap
     return scroll;
   }
 
   private JComponent messagePane() {
     JPanel p = panel(150, 540, 530, 180, MESSAGES_BG);
     p.add(panel(0, 0, 530, 1, DIVIDER));
-    p.add(label("Messages", Fonts.ui(Font.BOLD, 12), LABEL_GRAY, 12, 10));
+    p.add(label("Messages", Fonts.semibold(12), LABEL_GRAY, 12, 10));
+
+    messageTitle.setFont(Fonts.semibold(14));
+    messageTitle.setBounds(12, 31, 506, 20);
+    p.add(messageTitle);
 
     messages.setEditable(false);
     messages.setOpaque(false);
@@ -150,7 +157,7 @@ public class EditorPanel extends JPanel {
       @Override public void mouseClicked(MouseEvent e) { jumpToErrorAt(messages.viewToModel2D(e.getPoint())); }
     });
     JScrollPane ms = new JScrollPane(messages);
-    ms.setBounds(12, 30, 506, 98);
+    ms.setBounds(12, 56, 506, 74);
     ms.setBorder(BorderFactory.createEmptyBorder());
     ms.setOpaque(false);
     ms.getViewport().setOpaque(false);
@@ -183,6 +190,7 @@ public class EditorPanel extends JPanel {
   private void loadFile() {
     try {
       code.setText(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
+      code.reindent();
       code.setCaretPosition(0);
       undo.discardAllEdits();
     } catch (IOException e) {
@@ -247,23 +255,18 @@ public class EditorPanel extends JPanel {
   }
 
   private void showMessage(String title, Color titleColor, String body) {
+    messageTitle.setText(title);
+    messageTitle.setForeground(titleColor);
     StyledDocument doc = messages.getStyledDocument();
-    SimpleAttributeSet t = new SimpleAttributeSet();
-    StyleConstants.setFontFamily(t, Fonts.ui(Font.BOLD, 14).getFamily());
-    StyleConstants.setFontSize(t, 14);
-    StyleConstants.setBold(t, true);
-    StyleConstants.setForeground(t, titleColor);
     SimpleAttributeSet b = new SimpleAttributeSet();
-    StyleConstants.setFontFamily(b, Fonts.ui(Font.PLAIN, 13).getFamily());
+    StyleConstants.setFontFamily(b, Fonts.uiFamily());
     StyleConstants.setFontSize(b, 13);
     StyleConstants.setForeground(b, TEXT);
+    StyleConstants.setLineSpacing(b, 0.1f); // ~18 px lines like Figma
     try {
       doc.remove(0, doc.getLength());
-      doc.insertString(0, title, t);
-      if (!body.isEmpty()) doc.insertString(doc.getLength(), "\n" + body, b);
-      SimpleAttributeSet para = new SimpleAttributeSet();
-      StyleConstants.setSpaceBelow(para, 4);
-      doc.setParagraphAttributes(0, doc.getLength(), para, false);
+      doc.insertString(0, body, b);
+      doc.setParagraphAttributes(0, doc.getLength(), b, false);
     } catch (BadLocationException ignored) {
     }
     messages.setCaretPosition(0);
@@ -299,9 +302,17 @@ public class EditorPanel extends JPanel {
 
   // ---------------------------------------------------------------- code pane
 
-  /** Monospace code editor: no soft wrap, 18 px lines, soft tabs, auto-indent, undo. */
+  /**
+   * Monospace code editor: soft wrap (display only), 18 px lines, soft tabs, auto-indent, undo.
+   * Wrapped lines break at a space, '(' / ',' or before '.', and continue indented 4 spaces
+   * past the line's own indent (like the Figma mock's wrapped imports).
+   */
   private final class CodePane extends JTextPane {
+    private float spaceWidth = 7.2f;
+    private boolean reindentQueued = false;
+
     CodePane() {
+      setEditorKit(new CodeEditorKit());
       setMargin(new Insets(8, 8, 8, 6));
       setBackground(Color.WHITE);
       setCaretColor(CODE);
@@ -313,6 +324,7 @@ public class EditorPanel extends JPanel {
       StyleConstants.setForeground(def, CODE);
       StyleConstants.setLineSpacing(def, Math.max(0f, (CODE_LINE_HEIGHT - fm.getHeight()) / (float) fm.getHeight()));
       setFont(mono);
+      spaceWidth = fm.charWidth(' ');
 
       getDocument().addUndoableEditListener((UndoableEditEvent e) -> {
         if (e.getEdit() instanceof AbstractDocument.DefaultDocumentEvent
@@ -361,12 +373,106 @@ public class EditorPanel extends JPanel {
       }
       gutter.revalidate();
       gutter.repaint();
+      if (!reindentQueued) {
+        reindentQueued = true;
+        SwingUtilities.invokeLater(this::reindent); // can't change the document inside its listener
+      }
     }
 
-    /** No soft wrap: scroll horizontally when a line is wider than the view. */
+    /** Always wrap to the view width, even when a "word" is wider than the view. */
     @Override public boolean getScrollableTracksViewportWidth() {
-      Component p = getParent();
-      return p == null || getUI().getPreferredSize(this).width <= p.getSize().width;
+      return true;
+    }
+
+    /** Hanging indent per line: continuation rows start at (leading spaces + 4) columns. */
+    void reindent() {
+      reindentQueued = false;
+      StyledDocument doc = getStyledDocument();
+      Element root = doc.getDefaultRootElement();
+      for (int i = 0; i < root.getElementCount(); i++) {
+        Element para = root.getElement(i);
+        int n = 0;
+        try {
+          int len = Math.min(200, para.getEndOffset() - para.getStartOffset());
+          String head = doc.getText(para.getStartOffset(), len);
+          while (n < head.length() && head.charAt(n) == ' ') n++;
+        } catch (BadLocationException e) {
+          continue;
+        }
+        float indent = (n + 4) * spaceWidth;
+        if (StyleConstants.getLeftIndent(para.getAttributes()) == indent) continue;
+        SimpleAttributeSet a = new SimpleAttributeSet();
+        StyleConstants.setLeftIndent(a, indent);
+        StyleConstants.setFirstLineIndent(a, -indent);
+        doc.setParagraphAttributes(para.getStartOffset(), 1, a, false);
+      }
+    }
+  }
+
+  /** Views for the code pane: wrap at code-friendly spots, first row uses the full width. */
+  private static final class CodeEditorKit extends StyledEditorKit {
+    private final ViewFactory factory = elem -> {
+      String kind = elem.getName();
+      if (AbstractDocument.ParagraphElementName.equals(kind)) return new CodeParagraphView(elem);
+      if (AbstractDocument.SectionElementName.equals(kind)) return new BoxView(elem, View.Y_AXIS);
+      return new CodeLabelView(elem);
+    };
+
+    @Override public ViewFactory getViewFactory() { return factory; }
+  }
+
+  private static final class CodeParagraphView extends ParagraphView {
+    CodeParagraphView(Element e) { super(e); }
+
+    /** The first row starts at the hanging-indent origin, so it gets that width back. */
+    @Override public int getFlowSpan(int index) {
+      int span = super.getFlowSpan(index);
+      if (index == 0) span -= (int) StyleConstants.getFirstLineIndent(getAttributes());
+      return span;
+    }
+  }
+
+  private static final class CodeLabelView extends LabelView {
+    CodeLabelView(Element e) { super(e); }
+
+    @Override public int getBreakWeight(int axis, float pos, float len) {
+      if (axis == View.X_AXIS) {
+        checkPainter();
+        int p0 = getStartOffset();
+        int p1 = getGlyphPainter().getBoundedPosition(this, p0, pos, len);
+        if (p1 > p0 && p1 < getEndOffset() && codeBreak(p0, p1) > p0) return ExcellentBreakWeight;
+      }
+      return super.getBreakWeight(axis, pos, len);
+    }
+
+    @Override public View breakView(int axis, int p0, float pos, float len) {
+      if (axis == View.X_AXIS) {
+        checkPainter();
+        int p1 = getGlyphPainter().getBoundedPosition(this, p0, pos, len);
+        if (p1 < getEndOffset()) {
+          int spot = codeBreak(p0, p1);
+          if (spot > p0) return createFragment(p0, spot);
+        }
+      }
+      return super.breakView(axis, p0, pos, len);
+    }
+
+    /** Last good break in [p0, p1): after a space, '(' or ',', or before a '.'. -1 if none. */
+    private int codeBreak(int p0, int p1) {
+      try {
+        String t = getDocument().getText(p0, p1 - p0);
+        for (int i = t.length() - 1; i > 0; i--) {
+          char c = t.charAt(i);
+          if (c == '.') return p0 + i;
+          char prev = t.charAt(i - 1);
+          if (prev == ' ' || prev == '(' || prev == ',') {
+            if (t.substring(0, i).trim().isEmpty()) return -1; // don't break inside the indent
+            return p0 + i;
+          }
+        }
+      } catch (BadLocationException ignored) {
+      }
+      return -1;
     }
   }
 
@@ -436,7 +542,7 @@ public class EditorPanel extends JPanel {
       g2.setColor(building ? new Color(0xE57373) : hover ? RED_DARK : RED);
       g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 8, 8));
       wrench.paintIcon(this, g2, 10, 7);
-      g2.setFont(Fonts.ui(Font.BOLD, 12));
+      g2.setFont(Fonts.semibold(12));
       g2.setColor(Color.WHITE);
       FontMetrics fm = g2.getFontMetrics();
       g2.drawString(building ? "Building…" : "Build Everything", 34, (getHeight() - fm.getHeight()) / 2 + fm.getAscent());
