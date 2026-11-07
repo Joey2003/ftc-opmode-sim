@@ -1,0 +1,22 @@
+# Private notes (never pushed)
+claude-notes/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Java / build output
+*.class
+build/
+bin/
+out/
+.gradle/
+distribution/
+
+# Processing exports
+application.*/
