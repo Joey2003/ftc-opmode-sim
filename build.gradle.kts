@@ -1,17 +1,78 @@
-plugins {
-    `java-library`
-}
+// Based on github.com/processing/processing-library-template, trimmed.
+// ./gradlew build  -> build/libs/ftc-opmode-sim.jar, then installs into the Processing sketchbook.
 
-group = "org.nycfirst"
-version = "0.1.0"
+import java.util.Properties
+import org.gradle.internal.os.OperatingSystem
+
+plugins {
+    id("java")
+}
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
-dependencies {
-    // Processing core, provided by Processing at runtime (path set on Day 1)
-    // compileOnly(files("/Applications/Processing.app/.../core.jar"))
+val libraryProperties = Properties().apply {
+    load(rootProject.file("release.properties").inputStream())
 }
+
+val libName = "ftc-opmode-sim"
+// Processing library folder names must be ASCII letters/digits only (no hyphens).
+// Installed folder and jar use this name. Change when the library name is decided.
+val installName = "ftcopmodesim"
+group = "org.nycfirst"
+version = libraryProperties.getProperty("prettyVersion")
+
+// Processing core from the installed app (provided by Processing at runtime).
+val processingCore = "/Applications/Processing.app/Contents/app/resources/core/library/core-4.5.7.jar"
+
+// Sketchbook location (same logic as the template). Override with -PsketchbookLocation=...
+val userHome = System.getProperty("user.home")
+val sketchbookLocation: String = (findProperty("sketchbookLocation") as String?) ?: run {
+    val os = OperatingSystem.current()
+    when {
+        os.isMacOsX -> if (File("$userHome/Documents/Processing/sketchbook").isDirectory)
+            "$userHome/Documents/Processing/sketchbook" else "$userHome/Documents/Processing"
+        os.isWindows -> "$userHome/Documents/Processing"
+        else -> "$userHome/sketchbook"
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly(files(processingCore))
+}
+
+tasks.jar {
+    archiveBaseName.set(libName)
+    archiveClassifier.set("")
+    archiveVersion.set("")
+}
+
+tasks.register<WriteProperties>("writeLibraryProperties") {
+    group = "processing"
+    destinationFile = layout.buildDirectory.file("library.properties")
+    listOf("name", "version", "authors", "url", "categories", "sentence",
+           "paragraph", "minRevision", "maxRevision").forEach {
+        property(it, libraryProperties.getProperty(it))
+    }
+    property("prettyVersion", project.version)
+}
+
+// Installs to <sketchbook>/libraries/ftcopmodesim/{library.properties, library/ftcopmodesim.jar}
+tasks.register<Sync>("installLibrary") {
+    group = "processing"
+    dependsOn("jar", "writeLibraryProperties")
+    into("$sketchbookLocation/libraries/$installName")
+    from(layout.buildDirectory.file("library.properties"))
+    from(tasks.jar) { into("library"); rename { "$installName.jar" } }
+    from("examples") { into("examples") }
+    doLast { println("Installed $installName to $sketchbookLocation/libraries/$installName") }
+}
+
+tasks.build { finalizedBy("installLibrary") }

@@ -20,3 +20,8 @@ distribution/
 
 # Processing exports
 application.*/
+
+# Claude Code context (private)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
