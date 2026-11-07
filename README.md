@@ -1,6 +1,6 @@
 # FTC OpMode Sim
 
-A Processing library that lets students write and run real FTC SDK OpMode code and watch a 2D simulation of their robot, before they ever touch real hardware.
+A Processing sketch that lets students write and run real FTC SDK OpMode code and watch a 2D simulation of their robot, before they ever touch real hardware.
 
 Students write the same Java they would put on a real robot. The code they write in the sim pastes onto a real robot unchanged.
 
@@ -24,7 +24,7 @@ Students write the same Java they would put on a real robot. The code they write
 ## Requirements
 
 - Processing 4.5.7 (the sim uses Processing's built-in Java to compile your code)
-- JDK 17 and git (to build the library)
+- JDK 17 and git (to build the sim)
 - Tested on macOS. Windows and Linux are untested.
 
 ## Install
@@ -35,7 +35,7 @@ cd ftc-opmode-sim
 ./gradlew build
 ```
 
-This builds the library and installs it into your Processing sketchbook as `ftcopmodesim`.
+This builds the sim and installs its code into your Processing sketchbook (as `ftcopmodesim`) so the sketch can find it.
 
 ## Run the example
 
@@ -54,7 +54,7 @@ Your OpMode is saved in the sketch's `data/` folder as a normal `.java` file, re
 
 ## Troubleshooting
 
-- **Library doesn't show up in Processing:** restart Processing after `./gradlew build`.
+- **MotorTestDemo doesn't show up in Processing:** restart Processing after `./gradlew build`.
 - **Processing isn't in `/Applications`:** the build looks for Processing's core jar in `/Applications/Processing.app`. If Processing is somewhere else, pass the path: `./gradlew build -PprocessingCore=/path/to/core.jar` (inside Processing.app it's in `Contents/app/resources/core/library/`).
 - **"No Java compiler available":** run the sketch from Processing, which includes the compiler the sim needs.
 - **"No OpMode found":** add `@TeleOp` or `@Autonomous` to your class.
@@ -72,6 +72,7 @@ test-opmodes/                       OpModes used to test the sim
 
 ## Roadmap
 
+- Package as a Processing library (Contributions Manager)
 - Gamepad support
 - Multiple OpModes
 - Servos and sensors
@@ -86,4 +87,4 @@ Copyright (c) 2026 Antonius Wiriadjaja. Licensed under LGPL-2.1. See [LICENSE](L
 
 Built by Antonius Wiriadjaja at NYC FIRST for robotics education.
 
-FIRST® and FIRST® Tech Challenge are trademarks of FIRST. REV Robotics is a trademark of REV Robotics. This is not an official FIRST or REV Robotics product. The FTC SDK classes in this library are independent stand-ins written for the simulator, not FTC SDK code. All icons were drawn for this project.
+FIRST® and FIRST® Tech Challenge are trademarks of FIRST. REV Robotics is a trademark of REV Robotics. This is not an official FIRST or REV Robotics product. The FTC SDK classes in this project are independent stand-ins written for the simulator, not FTC SDK code. All icons were drawn for this project.
