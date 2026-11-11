@@ -98,8 +98,6 @@ public final class OpModeCompiler {
         if (!LinearOpMode.class.isAssignableFrom(c) || Modifier.isAbstract(c.getModifiers())) continue;
         if (c.isAnnotationPresent(Disabled.class)) continue;
         String name = null;
-
-        //match phase 
         TeleOp t = c.getAnnotation(TeleOp.class);
         Autonomous a = c.getAnnotation(Autonomous.class);
         if (t != null) name = t.name();

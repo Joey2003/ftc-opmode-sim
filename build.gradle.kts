@@ -1,7 +1,6 @@
 // Based on github.com/processing/processing-library-template, trimmed.
 // ./gradlew build  -> build/libs/ftc-opmode-sim.jar, then installs into the Processing sketchbook.
 
-import java.io.File
 import java.util.Properties
 import org.gradle.internal.os.OperatingSystem
 
@@ -32,31 +31,19 @@ version = libraryProperties.getProperty("prettyVersion")
 val processingCore: String = (findProperty("processingCore") as String?)?.also {
     if (!File(it).isFile) throw GradleException("processingCore not found: $it")
 } ?: run {
-    val os = OperatingSystem.current()
-    val app = when {
-        os.isMacOsX -> File("/Applications/Processing.app")
-        os.isWindows -> File("C:/Program Files/Processing")
-        else -> File("/usr/share/processing")
-    }
-    app.walkTopDown().maxDepth(10).onEnter { it.name != "jdk" }
+    val app = File("/Applications/Processing.app")
+    app.walkTopDown().maxDepth(7).onEnter { it.name != "jdk" }
         .filter { it.isFile && it.name.matches(Regex("core-.*\\.jar")) && it.parentFile.name == "library" }
         .maxByOrNull { it.name }?.absolutePath
         ?: throw GradleException(
-            "Processing core jar not found in ${app.absolutePath}.\n" +
+            "Processing core jar not found in /Applications/Processing.app.\n" +
             "Install Processing 4 there, or pass the path: ./gradlew build -PprocessingCore=/path/to/core.jar")
 }
 
 // Sketchbook location (same logic as the template). Override with -PsketchbookLocation=...
 val userHome = System.getProperty("user.home")
-val os = OperatingSystem.current()
-val processingPreferencesFile = when {
-    os.isWindows -> File(System.getenv("APPDATA") ?: "$userHome/AppData/Roaming", "Processing/preferences.txt")
-    else -> null
-}
-val configuredSketchbook = processingPreferencesFile?.takeIf { it.isFile }?.let { preferencesFile ->
-    Properties().apply { load(preferencesFile.inputStream()) }.getProperty("sketchbook.path.four")
-}
-val sketchbookLocation: String = (findProperty("sketchbookLocation") as String?) ?: configuredSketchbook ?: run {
+val sketchbookLocation: String = (findProperty("sketchbookLocation") as String?) ?: run {
+    val os = OperatingSystem.current()
     when {
         os.isMacOsX -> if (File("$userHome/Documents/Processing/sketchbook").isDirectory)
             "$userHome/Documents/Processing/sketchbook" else "$userHome/Documents/Processing"
